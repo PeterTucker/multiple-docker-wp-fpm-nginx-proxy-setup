@@ -32,7 +32,6 @@ services:
      
      volumes:
         - ./data/html:/var/www/html
-        - ./wp-content:/var/www/html/wp-content
   
    wp2-db_mysql:
      container_name: wp2-db
