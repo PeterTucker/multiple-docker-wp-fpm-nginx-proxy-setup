@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+    
+   nginx:
+    image: nginx:1.21
+    depends_on:
+        - wp1_site
+    expose:
+        - 80
+    volumes:
+        - ./nginx:/etc/nginx/conf.d
+        - ./data/html:/var/www/html
+    environment:
+        VIRTUAL_HOST: example.com,www.example.com
+        LETSENCRYPT_HOST: example.com,www.example.com
+        LETSENCRYPT_EMAIL: user@example.com
+        
+   wp1_site:
+     container_name: wp1_site
+     depends_on:
+        - wp1-db_mysql
+     image: wordpress:5.7.2-php7.4-fpm
+     expose:
+        - 9000
+     restart: always
+     environment:
+        WORDPRESS_DB_HOST: wp1-db_mysql
+        WORDPRESS_DB_NAME: wp1-db
+        WORDPRESS_DB_USER: wp1_admin
+        WORDPRESS_DB_PASSWORD: <MYSQL_PASSWORD>
+     
+     volumes:
+        - ./data/html:/var/www/html
+        - ./wp-content:/var/www/html/wp-content
+  
+   wp1-db_mysql:
+     container_name: wp1-db
+     image: akoller/low-memory-mysql:latest
+     volumes:
+        - ./wp1-db:/var/lib/mysql
+     restart: always
+     environment:
+        MYSQL_RANDOM_ROOT_PASSWORD: '1'
+        MYSQL_DATABASE: wp1-db
+        MYSQL_USER: wp1_admin
+        MYSQL_PASSWORD: <MYSQL_PASSWORD>
+     
+     
+volumes:
+  wp1-db:
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
